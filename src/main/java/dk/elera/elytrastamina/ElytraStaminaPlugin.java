@@ -4,6 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,11 +19,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-public class ElytraStaminaPlugin extends JavaPlugin implements Listener {
+public class ElytraStaminaPlugin extends JavaPlugin implements Listener, TabExecutor {
     private final Map<UUID, Double> stamina = new HashMap<>();
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
     private double maxStamina;
@@ -39,6 +40,7 @@ public class ElytraStaminaPlugin extends JavaPlugin implements Listener {
         regenPerTick = config.getDouble("regen-per-second", 0.3) / 20.0;
 
         getServer().getPluginManager().registerEvents(this, this);
+        getCommand("elytrastamina").setExecutor(this);
     }
 
     @EventHandler
@@ -125,5 +127,43 @@ public class ElytraStaminaPlugin extends JavaPlugin implements Listener {
         double progress = value / maxStamina;
         bar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
         bar.setVisible(progress < 1.0);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!command.getName().equalsIgnoreCase("elytrastamina")) return false;
+        if (!sender.hasPermission("elytrastamina.set")) {
+            sender.sendMessage("§cYou don't have permission to do that.");
+            return true;
+        }
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /elytrastamina <player> <amount>");
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found.");
+            return true;
+        }
+
+        try {
+            double amount = Double.parseDouble(args[1]);
+            UUID uuid = target.getUniqueId();
+            amount = Math.max(0, Math.min(maxStamina, amount));
+            stamina.put(uuid, amount);
+            sender.sendMessage("§aSet stamina of " + target.getName() + " to " + amount);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cInvalid number: " + args[1]);
+        }
+        return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 1) {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        }
+        return Collections.emptyList();
     }
 }

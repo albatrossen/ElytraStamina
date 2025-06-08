@@ -2,3 +2,10 @@ name: ElytraStaminaPlugin
 main: dk.elera.elytrastamina.ElytraStaminaPlugin
 version: 1.0
 api-version: 1.20
+
+commands:
+   elytrastamina:
+      description: Sets the elytra stamina for a player
+      usage: /<command> <player> <amount>
+      permission: elytrastamina.set
+      
