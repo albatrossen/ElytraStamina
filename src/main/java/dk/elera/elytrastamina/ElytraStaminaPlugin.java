@@ -57,8 +57,9 @@ public class ElytraStaminaPlugin extends JavaPlugin implements Listener, TabExec
 
     @EventHandler
     public void onRocketUse(PlayerInteractEvent event) {
-        if (event.getItem() != null && event.getItem().getType().toString().contains("FIREWORK_ROCKET")) {
-            UUID uuid = event.getPlayer().getUniqueId();
+        Player player = event.getPlayer();
+        if (player.isGliding() && event.getItem() != null && event.getItem().getType().toString().contains("FIREWORK_ROCKET")) {
+            UUID uuid = player.getUniqueId();
             stamina.putIfAbsent(uuid, maxStamina);
             double current = stamina.get(uuid);
             current -= rocketCost;
