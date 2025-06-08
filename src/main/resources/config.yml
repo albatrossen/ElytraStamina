@@ -1,0 +1,4 @@
+max-stamina: 60.0
+glide-drain-per-second: 1.0
+rocket-cost: 10.0
+regen-per-second: 0.3
